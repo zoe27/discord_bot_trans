@@ -3,7 +3,7 @@ import requests
 import os
 
 # Discord Bot Token
-DISCORD_TOKEN='MTMyMDU5MjM3MjgwMjkxMjMzMQ.GP8X9e.S8PzGRUUMG8gWGLtQx5zNrA_sOXxzl-jcLsNWY'
+DISCORD_TOKEN='you api key'
 
 
 # DeepL API 配置（可以换成自己喜欢的翻译 API）
