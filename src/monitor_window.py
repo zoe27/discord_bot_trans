@@ -1,12 +1,14 @@
+import mss.tools
+
 import sys
 import pytesseract
 import mss
 import mss.tools
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QTextEdit
 from PyQt5.QtCore import Qt, QTimer, QRect
-from PyQt5.QtGui import QPainter, QPen, QColor
 from PIL import Image
 from googletrans import Translator
+from selection_window import SelectionWindow
 
 translator = Translator()
 
@@ -47,6 +49,7 @@ class ScreenshotTranslator(QWidget):
 
     def start_select_region(self):
         self.hide()
+        QApplication.processEvents()  # Force process pending events
         self.selection_window = SelectionWindow(self)
         self.selection_window.show()
         self.selection_window.setGeometry(QApplication.desktop().geometry())  # 自动铺满整个屏幕
@@ -75,56 +78,6 @@ class ScreenshotTranslator(QWidget):
             else:
                 # 如果未识别到文字，显示提示信息
                 self.text_translated.setPlainText('没有识别到文字')
-
-class SelectionWindow(QWidget):
-    def __init__(self, parent):
-        super().__init__()
-        self.parent = parent
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self.start_pos = None
-        self.end_pos = None
-
-    def mousePressEvent(self, event):
-        # 记录鼠标按下的起始位置
-        if event.button() == Qt.LeftButton:
-            self.start_pos = event.pos()
-            self.end_pos = self.start_pos
-            self.update()
-
-    def mouseMoveEvent(self, event):
-        # 更新鼠标拖动的结束位置
-        if self.start_pos:
-            self.end_pos = event.pos()
-            self.update()
-
-    def mouseReleaseEvent(self, event):
-        # 鼠标释放时完成选择
-        if event.button() == Qt.LeftButton:
-            self.end_pos = event.pos()
-            self.finish_selection()
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-
-        # 绘制半透明黑色背景
-        painter.fillRect(self.rect(), QColor(0, 0, 0, 100))
-
-        # 如果有选择区域，绘制红色矩形框
-        if self.start_pos and self.end_pos:
-            pen = QPen(Qt.red, 2, Qt.SolidLine)
-            painter.setPen(pen)
-            rect = QRect(self.start_pos, self.end_pos).normalized()
-            painter.drawRect(rect)
-
-    def finish_selection(self):
-        # 记录选择的矩形区域并关闭选择窗口
-        rect = QRect(self.start_pos, self.end_pos).normalized()
-        self.parent.selected_region = rect
-        self.close()
-        self.parent.show()
-        self.parent.timer.start(1000)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

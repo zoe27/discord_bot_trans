@@ -59,15 +59,14 @@ class SelectionWindow(QWidget):
 
         # 绘制选择框
         if self.start_pos and self.end_pos:
-            pen = QPen(Qt.white, 2, Qt.DashLine)
+            pen = QPen(Qt.red, 2, Qt.SolidLine)
             painter.setPen(pen)
             rect = QRect(self.start_pos, self.end_pos).normalized()
             painter.drawRect(rect)
 
     def finish_selection(self):
         rect = QRect(self.start_pos, self.end_pos).normalized()
-        self.parent.selected_rect = rect
+        self.parent.selected_region = rect
         self.close()
         self.parent.show()
-        # self.parent.timer.start(1000)
-        self.parent.timer.start(1000) if hasattr(self.parent, 'timer') else print("Timer not initialized")
+        self.parent.timer.start(1000)

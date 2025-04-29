@@ -7,7 +7,7 @@
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTextEdit, QApplication
 from PyQt5.QtCore import QTimer
-from SelectionOverlay import SelectionOverlay
+from SelectionOverlay import SelectionWindow
 from ScreenCapture import ScreenCapture
 from OcrEngine import OcrEngine
 from TranslatorEngine import TranslatorEngine
@@ -57,15 +57,11 @@ class MainWindow(QWidget):
         self.setLayout(layout)
 
     def select_area(self):
-        # 隐藏主窗口，显示全屏遮罩用于区域选择
         self.hide()
-        # Create overlay and connect its signal
-        self.overlay = SelectionOverlay()
-        # self.overlay.area_selected.connect(self.on_area_selected)
-        # Show overlay fullscreen
-        self.overlay.showFullScreen()
-        # self.overlay.show()
-        # self.overlay.setGeometry(QApplication.desktop().geometry())  # 自动铺满整个屏幕
+        QApplication.processEvents()  # Force process pending events
+        self.selection_window = SelectionWindow(self)
+        self.selection_window.show()
+        self.selection_window.setGeometry(QApplication.desktop().geometry())  # 自动铺满整个屏幕
 
     def on_area_selected(self, rect):
         # 用户选好区域后回调
@@ -78,10 +74,13 @@ class MainWindow(QWidget):
     def process(self):
         # 主处理逻辑：截图、OCR、翻译
         if not self.selected_rect:
+            print("没有选定区域")
             return
 
         img = self.capture.capture_area(self.selected_rect)
         text = self.ocr.extract_text(img)
+
+        print(f"识别到的文本: {text}")
 
         # 只有识别结果变化时才更新（防止频繁翻译）
         if text.strip() and text != self.last_text:
