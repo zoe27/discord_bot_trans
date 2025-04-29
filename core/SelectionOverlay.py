@@ -1,7 +1,8 @@
+# SelectionOverlay.py
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QGuiApplication
-
+from SelectionFrame import SelectionFrame  # ✅ 新增导入
 
 class SelectionWindow(QWidget):
     def __init__(self, parent):
@@ -15,7 +16,6 @@ class SelectionWindow(QWidget):
         self.end_pos = None
         self.background = self.capture_fullscreen()
 
-        # 支持多显示器
         geometry = QGuiApplication.primaryScreen().virtualGeometry()
         self.setGeometry(geometry)
 
@@ -50,14 +50,9 @@ class SelectionWindow(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-
-        # 绘制截图背景
         painter.drawPixmap(self.rect(), self.background)
+        painter.fillRect(self.rect(), QColor(0, 0, 0, 100))  # 遮罩
 
-        # 绘制半透明遮罩
-        painter.fillRect(self.rect(), QColor(0, 0, 0, 100))
-
-        # 绘制选择框
         if self.start_pos and self.end_pos:
             pen = QPen(Qt.white, 2, Qt.DashLine)
             painter.setPen(pen)
@@ -67,7 +62,11 @@ class SelectionWindow(QWidget):
     def finish_selection(self):
         rect = QRect(self.start_pos, self.end_pos).normalized()
         self.parent.selected_rect = rect
+
+        # ✅ 显示持久框
+        self.selection_frame = SelectionFrame(rect)
+
         self.close()
         self.parent.show()
-        # self.parent.timer.start(1000)
-        self.parent.timer.start(1000) if hasattr(self.parent, 'timer') else print("Timer not initialized")
+        if hasattr(self.parent, 'timer'):
+            self.parent.timer.start(1000)
