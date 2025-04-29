@@ -1,0 +1,25 @@
+'''
+管理多屏截图逻辑
+'''
+
+# ScreenCapture.py
+# 区域截图模块
+
+import mss
+from PIL import Image
+
+class ScreenCapture:
+    def __init__(self):
+        self.sct = mss.mss()  # 初始化屏幕截图器
+
+    def capture_area(self, rect):
+        # rect 是 QRect对象，需要转换为 dict
+        monitor = {
+            "top": rect.top(),
+            "left": rect.left(),
+            "width": rect.width(),
+            "height": rect.height()
+        }
+        sct_img = self.sct.grab(monitor)
+        img = Image.frombytes('RGB', (sct_img.width, sct_img.height), sct_img.rgb)
+        return img

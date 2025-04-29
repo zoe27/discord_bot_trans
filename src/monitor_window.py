@@ -46,14 +46,10 @@ class ScreenshotTranslator(QWidget):
         self.setLayout(layout)
 
     def start_select_region(self):
-        # 隐藏主窗口以便用户可以选择屏幕区域
-        # self.hide()
-        # 创建一个新的选择窗口，用于选择屏幕区域
+        self.hide()
         self.selection_window = SelectionWindow(self)
-        # 将选择窗口设置为全屏显示
-        self.selection_window.showFullScreen()
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool | Qt.WindowTransparentForInput)
-        self.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.selection_window.show()
+        self.selection_window.setGeometry(QApplication.desktop().geometry())  # 自动铺满整个屏幕
 
     def capture_and_translate(self):
         if self.selected_region:
