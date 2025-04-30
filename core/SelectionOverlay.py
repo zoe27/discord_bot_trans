@@ -70,3 +70,6 @@ class SelectionWindow(QWidget):
         self.parent.show()
         if hasattr(self.parent, 'timer'):
             self.parent.timer.start(1000)
+        # SelectionOverlay.py 中最后需要回调 MainWindow
+        self.parent.on_area_selected(rect)
+

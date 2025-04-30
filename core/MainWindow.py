@@ -1,30 +1,37 @@
 # MainWindow.py
-# 管理整体界面：选区、截图、OCR识别、翻译显示
+# 主界面，负责管理整体流程：选区、截图、OCR识别、翻译显示
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTextEdit, QApplication
 from PyQt5.QtCore import QTimer, QRect
-from PyQt5.QtGui import QPainter, QPen, QColor
 from SelectionOverlay import SelectionWindow
 from ScreenCapture import ScreenCapture
 from OcrEngine import OcrEngine
 from TranslatorEngine import TranslatorEngine
+from OverlayDisplay import OverlayDisplay
 
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.selected_rect = None
-        self.last_text = ""
+        self.initUI()
 
+        # 保存选中的区域
+        self.selected_rect = None
+
+        # 定时器，每隔一段时间截图识别
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.process)
+
+        # 初始化核心功能模块
         self.capture = ScreenCapture()
         self.ocr = OcrEngine()
         self.translator = TranslatorEngine()
 
-        self.initUI()
+        # 初始化浮窗
+        self.overlay = OverlayDisplay()
 
-        # 定时器：每秒处理一次
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.process)
+        # 保存上一次识别到的文字，用来对比
+        self.last_text = ""
 
     def initUI(self):
         self.setWindowTitle('实时区域监控翻译')
@@ -32,14 +39,17 @@ class MainWindow(QWidget):
 
         layout = QVBoxLayout()
 
+        # 按钮：点击后开始选择区域
         self.btn_select = QPushButton('选择实时翻译区域', self)
         self.btn_select.clicked.connect(self.select_area)
         layout.addWidget(self.btn_select)
 
+        # 显示识别出的原文
         self.text_original = QTextEdit(self)
         self.text_original.setPlaceholderText('识别到的原文')
         layout.addWidget(self.text_original)
 
+        # 显示翻译后的内容
         self.text_translated = QTextEdit(self)
         self.text_translated.setPlaceholderText('翻译后的文本')
         layout.addWidget(self.text_translated)
@@ -48,32 +58,23 @@ class MainWindow(QWidget):
 
     def select_area(self):
         self.hide()
-        QApplication.processEvents()  # 防止界面卡死
+        QApplication.processEvents()
         self.selection_window = SelectionWindow(self)
         self.selection_window.show()
         self.selection_window.setGeometry(QApplication.desktop().geometry())
 
-    # def on_area_selected(self, rect: QRect):
-    #     """选区完成后的回调函数"""
-    #     self.selected_rect = rect
-    #     if self.selected_rect:
-    #         print(f"已选定区域: {self.selected_rect}")
-    #         self.show()
-    #         self.update()  # 请求重绘选区框
-    #         self.timer.start(1000)  # 每秒处理一次
-
-    # def paintEvent(self, event):
-    #     """绘制用户选定的区域边框"""
-    #     if self.selected_rect:
-    #         painter = QPainter(self)
-    #         pen = QPen(QColor(255, 0, 0), 2)  # 红色边框
-    #         painter.setPen(pen)
-    #         painter.drawRect(self.selected_rect)
+    def on_area_selected(self, rect: QRect):
+        """Callback when area is selected"""
+        self.selected_rect = rect
+        if self.selected_rect:
+            print("已选定区域:", rect)
+            self.overlay.set_rect(rect)  # 显示浮窗选区
+            self.show()
+        self.timer.start(1000)  # 每秒处理一次
 
     def process(self):
-        """核心处理逻辑：截图 -> OCR -> 翻译 -> 显示"""
         if not self.selected_rect:
-            print("未选定区域")
+            print("没有选定区域")
             return
 
         img = self.capture.capture_area(self.selected_rect)
