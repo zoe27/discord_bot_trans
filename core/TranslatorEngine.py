@@ -3,6 +3,7 @@
 '''
 import time
 
+import googletrans
 # TranslatorEngine.py
 # 翻译模块，调用googletrans库
 
@@ -17,6 +18,7 @@ class TranslatorEngine:
             # 调用Google Translate进行翻译
             # result = self.translator.translate(text, src=src, dest=dest)
             start_time = time.time()
+            # print(f"Translating text: {text} from {src} to {dest}")
             result = self.translator.translate(text, src=src, dest=dest)
             elapsed_time = time.time() - start_time
             print(f"Translation took {elapsed_time:.2f} seconds")
