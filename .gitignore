@@ -6,3 +6,4 @@ venv/*
 .idea/*
 .iml
 
+/core/tessdata/chi_sim.traineddata
