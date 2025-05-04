@@ -1,5 +1,6 @@
 # MainWindow.py
 # 主界面，负责管理整体流程：选区、截图、OCR识别、翻译显示
+from datetime import datetime
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTextEdit, QApplication
 from PyQt5.QtCore import QTimer, QRect
@@ -73,6 +74,7 @@ class MainWindow(QWidget):
         self.timer.start(1000)  # 每秒处理一次
 
     def process(self):
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 运行截图")
         if not self.selected_rect:
             print("没有选定区域")
             return
@@ -80,7 +82,15 @@ class MainWindow(QWidget):
         img = self.capture.capture_area(self.selected_rect)
         text = self.ocr.extract_text(img)
 
-        if text.strip() and text != self.last_text:
+        # 如果OCR结果为空或与上次相同，不进行翻译
+        if not text.strip():
+            return
+
+        # 比较文本是否有实质变化（忽略空白字符的差异）
+        current_text = text.strip()
+        last_text = self.last_text.strip()
+
+        if current_text != last_text:
             self.last_text = text
             self.text_original.setPlainText(text)
             translation = self.translator.translate(text)

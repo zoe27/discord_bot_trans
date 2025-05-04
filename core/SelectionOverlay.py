@@ -64,12 +64,12 @@ class SelectionWindow(QWidget):
         self.parent.selected_rect = rect
 
         # ✅ 显示持久框
-        self.selection_frame = SelectionFrame(rect)
+        # self.selection_frame = SelectionFrame(rect)
 
         self.close()
         self.parent.show()
-        if hasattr(self.parent, 'timer'):
-            self.parent.timer.start(1000)
+        # if hasattr(self.parent, 'timer'):
+        #     self.parent.timer.start(500) # 500ms一次，增加文本变更敏感度
         # SelectionOverlay.py 中最后需要回调 MainWindow
         self.parent.on_area_selected(rect)
 
