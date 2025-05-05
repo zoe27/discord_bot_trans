@@ -24,3 +24,7 @@
 - **屏幕截图**: 选择屏幕区域并保存截图。
 - **OCR 识别**: 使用 Tesseract 识别截图中的文字。
 - **翻译**: 使用 Google Translate 将识别的文字翻译为目标语言。
+
+## 打包项目
+pyinstaller --onefile --windowed --name ScreenTranslator \
+  --add-data "core/tessdata:tessdata" core/main.py

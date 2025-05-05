@@ -7,3 +7,6 @@ venv/*
 .iml
 
 /core/tessdata/chi_sim.traineddata
+/ScreenTranslator.spec
+/dist/
+/core/tessdata/
