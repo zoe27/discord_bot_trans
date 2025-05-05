@@ -1,5 +1,4 @@
 import sys
-
 import pytesseract
 import os
 import requests
@@ -19,46 +18,40 @@ class OcrEngine:
         'spa': 'spa.traineddata',  # Spanish
     }
 
-    def __init__(self, tessdata_dir='./tessdata'):
-        # 设置 TESSDATA_PREFIX 到程序运行目录下的 tessdata 文件夹
-        # current_dir = os.path.dirname(os.path.abspath(__file__))
-
-        # if tessdata_dir is None:
-        #     tessdata_dir = os.path.join(current_dir, 'tessdata')
-
-        # Set TESSDATA_PREFIX to the correct path
-        if getattr(sys, 'frozen', False):  # If running as a packaged app
-            # base_path = sys._MEIPASS
-            base_path = os.path.dirname(sys.executable)
+    def __init__(self):
+        # 判断是否为打包环境
+        if getattr(sys, 'frozen', False):  # 如果是 PyInstaller 打包
+            app_base = os.path.dirname(sys.executable)
+            internal_tessdata = os.path.abspath(os.path.join(app_base, '..', 'Resources', 'tessdata'))
         else:
-            base_path = os.path.dirname(os.path.abspath(__file__))
+            internal_tessdata = os.path.join(os.path.dirname(__file__), 'tessdata')
 
-        os.environ['TESSDATA_PREFIX'] = os.path.join(base_path, 'tessdata')
-
-        # 设置 TESSDATA_PREFIX 环境变量
-        # os.environ['TESSDATA_PREFIX'] = tessdata_dir
-        print(f"Setting TESSDATA_PREFIX to: {os.environ['TESSDATA_PREFIX']}")
-
-        # 初始化 tessdata 目录
-        self.tessdata_dir = os.environ['TESSDATA_PREFIX']
-        if not os.path.exists(self.tessdata_dir):
+        # 优先使用 .app 内部 Resources 路径（如果可写）
+        if os.path.isdir(internal_tessdata) and os.access(internal_tessdata, os.W_OK):
+            self.tessdata_dir = internal_tessdata
+        else:
+            # 回退到用户目录
+            self.tessdata_dir = os.path.expanduser('~/Library/Application Support/ScreenTranslator/tessdata')
             os.makedirs(self.tessdata_dir, exist_ok=True)
 
-        print(f"Available language files: {[f for f in os.listdir(self.tessdata_dir) if f.endswith('.traineddata')]}")
+        # 设置 TESSDATA_PREFIX 环境变量
+        os.environ['TESSDATA_PREFIX'] = self.tessdata_dir
+        print(f"📁 使用 tessdata 路径: {self.tessdata_dir}")
+
+        # 列出已存在的语言文件
+        if os.path.exists(self.tessdata_dir):
+            print(f"📄 已有语言文件: {[f for f in os.listdir(self.tessdata_dir) if f.endswith('.traineddata')]}")
 
     def _download_language(self, lang_code):
-        # 检查语言代码是否有效
         traineddata_file = self.LANG_MAPPINGS.get(lang_code)
         if not traineddata_file:
-            raise Exception(f"❌ Unsupported language code: '{lang_code}'")
+            raise Exception(f"❌ 不支持的语言代码: '{lang_code}'")
 
-        # 构建下载路径
         url = f"https://raw.githubusercontent.com/tesseract-ocr/tessdata/main/{traineddata_file}"
         dest_path = os.path.join(self.tessdata_dir, traineddata_file)
 
-        print(f"🔄 Downloading language data for '{lang_code}' from {url} ...")
+        print(f"🔄 下载语言文件 '{lang_code}' 从 {url} ...")
 
-        # 请求并保存文件
         try:
             response = requests.get(url, stream=True, timeout=30)
             if response.status_code == 200:
@@ -73,30 +66,27 @@ class OcrEngine:
                     for data in response.iter_content(chunk_size=1024):
                         size = f.write(data)
                         pbar.update(size)
-                print(f"✅ Downloaded: {dest_path}")
+                print(f"✅ 下载完成: {dest_path}")
             else:
-                raise Exception(f"❌ Failed to download language data for '{lang_code}', status code: {response.status_code}")
+                raise Exception(f"❌ 下载失败，状态码: {response.status_code}")
         except Exception as e:
-            print(f"❌ Error downloading language file: {e}")
+            print(f"❌ 下载语言文件出错: {e}")
             raise
 
     def extract_text(self, img, lang='eng'):
         if lang not in self.LANG_MAPPINGS:
-            raise Exception(f"❌ Unsupported language code: '{lang}'")
+            raise Exception(f"❌ 不支持的语言代码: '{lang}'")
 
-        # 检查语言文件是否存在本地
-        traineddata_path = os.path.join(self.tessdata_dir, f"{lang}.traineddata")
+        traineddata_path = os.path.join(self.tessdata_dir, self.LANG_MAPPINGS[lang])
         if not os.path.exists(traineddata_path):
-            print(f"❗ '{lang}' not available locally. Trying to download...")
+            print(f"⚠️ 本地未找到语言文件 '{lang}'，尝试下载...")
             self._download_language(lang)
 
-        # 使用指定的 tessdata 目录
         config = f'--tessdata-dir "{self.tessdata_dir}"'
 
-        # 进行 OCR 识别
         try:
             text = pytesseract.image_to_string(img, lang=lang, config=config)
             return text
         except pytesseract.TesseractError as e:
-            print(f"❌ Error during OCR: {e}")
+            print(f"❌ OCR 识别出错: {e}")
             return None

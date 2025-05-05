@@ -10,3 +10,4 @@ venv/*
 /ScreenTranslator.spec
 /dist/
 /core/tessdata/
+/my_ocr_app.log
