@@ -3,6 +3,7 @@ import pytesseract
 import os
 import requests
 from tqdm import tqdm
+import logging
 
 
 class OcrEngine:
@@ -36,21 +37,22 @@ class OcrEngine:
 
         # 设置 TESSDATA_PREFIX 环境变量
         os.environ['TESSDATA_PREFIX'] = self.tessdata_dir
-        print(f"📁 使用 tessdata 路径: {self.tessdata_dir}")
+        logging.info(f"📁 使用 tessdata 路径: {self.tessdata_dir}")
 
         # 列出已存在的语言文件
         if os.path.exists(self.tessdata_dir):
-            print(f"📄 已有语言文件: {[f for f in os.listdir(self.tessdata_dir) if f.endswith('.traineddata')]}")
+            logging.info(f"📄 已有语言文件: {[f for f in os.listdir(self.tessdata_dir) if f.endswith('.traineddata')]}")
 
     def _download_language(self, lang_code):
         traineddata_file = self.LANG_MAPPINGS.get(lang_code)
         if not traineddata_file:
+            logging.error(f"❌ 不支持的语言代码: '{lang_code}'")
             raise Exception(f"❌ 不支持的语言代码: '{lang_code}'")
 
         url = f"https://raw.githubusercontent.com/tesseract-ocr/tessdata/main/{traineddata_file}"
         dest_path = os.path.join(self.tessdata_dir, traineddata_file)
 
-        print(f"🔄 下载语言文件 '{lang_code}' 从 {url} ...")
+        logging.info(f"🔄 下载语言文件 '{lang_code}' 从 {url} ...")
 
         try:
             response = requests.get(url, stream=True, timeout=30)
@@ -66,20 +68,22 @@ class OcrEngine:
                     for data in response.iter_content(chunk_size=1024):
                         size = f.write(data)
                         pbar.update(size)
-                print(f"✅ 下载完成: {dest_path}")
+                logging.info(f"✅ 下载完成: {dest_path}")
             else:
+                logging.error(f"❌ 下载失败，状态码: {response.status_code}")
                 raise Exception(f"❌ 下载失败，状态码: {response.status_code}")
         except Exception as e:
-            print(f"❌ 下载语言文件出错: {e}")
+            logging.error(f"❌ 下载语言文件出错: {e}")
             raise
 
     def extract_text(self, img, lang='eng'):
         if lang not in self.LANG_MAPPINGS:
+            logging.error(f"❌ 不支持的语言代码: '{lang}'")
             raise Exception(f"❌ 不支持的语言代码: '{lang}'")
 
         traineddata_path = os.path.join(self.tessdata_dir, self.LANG_MAPPINGS[lang])
         if not os.path.exists(traineddata_path):
-            print(f"⚠️ 本地未找到语言文件 '{lang}'，尝试下载...")
+            logging.warning(f"⚠️ 本地未找到语言文件 '{lang}'，尝试下载...")
             self._download_language(lang)
 
         config = f'--tessdata-dir "{self.tessdata_dir}"'
@@ -88,5 +92,5 @@ class OcrEngine:
             text = pytesseract.image_to_string(img, lang=lang, config=config)
             return text
         except pytesseract.TesseractError as e:
-            print(f"❌ OCR 识别出错: {e}")
+            logging.error(f"❌ OCR 识别出错: {e}")
             return None

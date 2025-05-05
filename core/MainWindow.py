@@ -9,6 +9,7 @@ from ScreenCapture import ScreenCapture
 from OcrEngine import OcrEngine
 from TranslatorEngine import TranslatorEngine
 from OverlayDisplay import OverlayDisplay
+import logging
 
 
 class MainWindow(QWidget):
@@ -112,7 +113,7 @@ class MainWindow(QWidget):
         """Callback when area is selected"""
         self.selected_rect = rect
         if self.selected_rect:
-            print("已选定区域:", rect)
+            logging.info(f"已选定区域: {rect}")
             self.overlay.set_rect(rect)  # 显示浮窗选区
             self.show()
         self.timer.start(1000)  # 每秒处理一次
@@ -120,7 +121,7 @@ class MainWindow(QWidget):
     def process(self):
         # print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 运行截图")
         if not self.selected_rect:
-            print("没有选定区域")
+            logging.warning("没有选定区域")
             return
 
         img = self.capture.capture_area(self.selected_rect)

@@ -1,6 +1,7 @@
 '''
 负责翻译文本
 '''
+import logging
 import time
 
 import googletrans
@@ -21,7 +22,7 @@ class TranslatorEngine:
             # print(f"Translating text: {text} from {src} to {dest}")
             result = self.translator.translate(text, src=src, dest=dest)
             elapsed_time = time.time() - start_time
-            print(f"Translation took {elapsed_time:.2f} seconds")
+            logging.info(f"Translation took {elapsed_time:.2f} seconds")
             return result.text
         except Exception as e:
             # 出错返回提示
