@@ -124,27 +124,46 @@ class MainWindow(QWidget):
             logging.warning("no area selected")
             return
 
-        img = self.capture.capture_area(self.selected_rect)
-        text = self.ocr.extract_text(img, self.languages[self.src_lang.currentText()])
+        try:
+            # 获取截图
+            img = self.capture.capture_area(self.selected_rect)
+            if img is None:
+                logging.error("Failed to capture screen area")
+                return
 
-        # 如果OCR结果为空或与上次相同，不进行翻译
-        if not text.strip():
-            return
+            # OCR识别
+            text = self.ocr.extract_text(img, self.languages[self.src_lang.currentText()])
+            if not text:
+                logging.debug("OCR result is empty")
+                return
 
-        # 比较文本是否有实质变化（忽略空白字符的差异）
-        current_text = text.strip()
-        last_text = self.last_text.strip()
+            # 比较文本是否有实质变化（忽略空白字符的差异）
+            current_text = text.strip()
+            last_text = self.last_text.strip()
 
-        if current_text != last_text:
-            self.last_text = text
-            self.text_original.setPlainText(text)
-            src_lang = self.languages[self.src_lang.currentText()]
-            dest_lang = self.languages[self.dest_lang.currentText()]
-            # translation = self.translator.translate(text, src=src_lang, dest=dest_lang)
-            translation = self.translator.translate(text, src=self.translator_codes[src_lang],
-                                                    dest=self.translator_codes[dest_lang])
-            self.text_translated.setPlainText(translation)
+            if current_text != last_text:
+                self.last_text = text
+                self.text_original.setPlainText(text)
 
-            # translation = self.translator.translate(text)
-            # self.text_translated.setPlainText(translation)
+                # 获取源语言和目标语言代码
+                try:
+                    src_lang = self.languages[self.src_lang.currentText()]
+                    dest_lang = self.languages[self.dest_lang.currentText()]
+
+                    # 进行翻译
+                    translation = self.translator.translate(
+                        text,
+                        src=self.translator_codes[src_lang],
+                        dest=self.translator_codes[dest_lang]
+                    )
+                    self.text_translated.setPlainText(translation)
+                    logging.debug(f"Successfully translated text from {src_lang} to {dest_lang}")
+
+                except KeyError as e:
+                    logging.error(f"Invalid language code: {str(e)}")
+                except Exception as e:
+                    logging.error(f"Translation error: {str(e)}")
+
+        except Exception as e:
+            logging.error(f"Process error: {str(e)}")
 

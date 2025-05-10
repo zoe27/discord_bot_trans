@@ -14,12 +14,22 @@ class ScreenCapture:
 
     def capture_area(self, rect):
         # rect 是 QRect对象，需要转换为 dict
-        monitor = {
-            "top": rect.top(),
-            "left": rect.left(),
-            "width": rect.width(),
-            "height": rect.height()
-        }
-        sct_img = self.sct.grab(monitor)
-        img = Image.frombytes('RGB', (sct_img.width, sct_img.height), sct_img.rgb)
-        return img
+        try:
+            monitor = {
+                "top": rect.top(),
+                "left": rect.left(),
+                "width": rect.width(),
+                "height": rect.height()
+            }
+            sct_img = self.sct.grab(monitor)
+            img = Image.frombytes('RGB', (sct_img.width, sct_img.height), sct_img.rgb)
+            return img
+        except mss.exception.ScreenShotError as e:
+            print(f"Screenshot error: {e}")
+            return None
+        except ValueError as e:
+            print(f"Image conversion error: {e}")
+            return None
+        except Exception as e:
+            print(f"Unexpected error during screen capture: {e}")
+            return None
