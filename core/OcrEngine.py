@@ -72,6 +72,7 @@ class OcrEngine:
                     unit='iB',
                     unit_scale=True,
                     unit_divisor=1024,
+                    disable=sys.platform == 'win32'  # Disable progress bar on Windows
             ) as pbar:
                 for data in response.iter_content(chunk_size=1024):
                     size = f.write(data)
@@ -101,9 +102,13 @@ class OcrEngine:
                 os.remove(temp_path)
             raise
         except Exception as e:
-            logging.error(f"❌ unexpected error: {e}")
+            logging.error(f"❌ unexpected error: {str(e)}")
+            logging.debug(f"Error details - Type: {type(e).__name__}, Args: {e.args}")
             if os.path.exists(temp_path):
-                os.remove(temp_path)
+                try:
+                    os.remove(temp_path)
+                except OSError as oe:
+                    logging.warning(f"Failed to remove temporary file: {oe}")
             raise
 
     def extract_text(self, img, lang='eng'):
