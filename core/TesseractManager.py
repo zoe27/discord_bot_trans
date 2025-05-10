@@ -5,8 +5,7 @@ import platform
 
 class TesseractManager:
     def __init__(self):
-        self.base_dir = os.path.dirname(os.path.abspath(__file__))
-        self.tesseract_dir = os.path.join(self.base_dir, "tesseract")
+        self.tesseract_dir = os.path.join(os.getenv('APPDATA'), 'ScreenTranslator', 'tesseract')
         if not os.path.exists(self.tesseract_dir):
             os.makedirs(self.tesseract_dir)
         self.tesseract_exe = os.path.join(self.tesseract_dir, "tesseract.exe")
@@ -37,12 +36,12 @@ class TesseractManager:
         try:
             subprocess.run([exe_path, '/S', f'/D={self.tesseract_dir}'], check=True)
         except subprocess.CalledProcessError as e:
-            print(f"Error during installation: {e}")
+            logging.info(f"Error during installation: {e}")
             raise
         finally:
             os.remove(exe_path)
 
-        print("Tesseract downloaded and installed.")
+        logging.info("Tesseract downloaded and installed.")
 
     def get_tesseract_cmd(self):
         return self.tesseract_exe
