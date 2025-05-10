@@ -133,7 +133,7 @@ class OcrEngine:
         config = f'--tessdata-dir "{self.tessdata_dir}"'
 
         try:
-            text = pytesseract.image_to_string(img, lang=lang, config=config)
+            text = pytesseract.image_to_string(img, lang=lang)
             return text
         except pytesseract.TesseractError as e:
             logging.error(f"❌ OCR error: {e}")
