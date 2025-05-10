@@ -27,12 +27,17 @@ class OcrEngine:
         else:
             internal_tessdata = os.path.join(os.path.dirname(__file__), 'tessdata')
 
-        # 优先使用 .app 内部 Resources 路径（如果可写）
+        # 优先使用内部tessdata路径（如果可写）
         if os.path.isdir(internal_tessdata) and os.access(internal_tessdata, os.W_OK):
             self.tessdata_dir = internal_tessdata
         else:
-            # 回退到用户目录
-            self.tessdata_dir = os.path.expanduser('~/Library/Application Support/ScreenTranslator/tessdata')
+            # 根据操作系统选择合适的用户目录
+            if sys.platform == 'win32':
+                self.tessdata_dir = os.path.join(os.getenv('APPDATA'), 'ScreenTranslator', 'tessdata')
+            elif sys.platform == 'darwin':
+                self.tessdata_dir = os.path.expanduser('~/Library/Application Support/ScreenTranslator/tessdata')
+            else:  # Linux and others
+                self.tessdata_dir = os.path.expanduser('~/.config/ScreenTranslator/tessdata')
             os.makedirs(self.tessdata_dir, exist_ok=True)
 
         # 设置 TESSDATA_PREFIX 环境变量
@@ -56,24 +61,34 @@ class OcrEngine:
 
         try:
             response = requests.get(url, stream=True, timeout=30)
-            if response.status_code == 200:
-                total_size = int(response.headers.get('content-length', 0))
-                with open(dest_path, 'wb') as f, tqdm(
-                        desc=f"Downloading {lang_code}",
-                        total=total_size,
-                        unit='iB',
-                        unit_scale=True,
-                        unit_divisor=1024,
-                ) as pbar:
-                    for data in response.iter_content(chunk_size=1024):
-                        size = f.write(data)
-                        pbar.update(size)
-                logging.info(f"✅ download finished: {dest_path}")
-            else:
-                logging.error(f"❌ download fail，code: {response.status_code}")
-                raise Exception(f"❌ download fail，code: {response.status_code}")
+            response.raise_for_status()  # Raise exception for bad status codes
+            total_size = int(response.headers.get('content-length', 0))
+
+            # First download to a temporary file
+            temp_path = dest_path + '.tmp'
+            with open(temp_path, 'wb') as f, tqdm(
+                    desc=f"Downloading {lang_code}",
+                    total=total_size,
+                    unit='iB',
+                    unit_scale=True,
+                    unit_divisor=1024,
+            ) as pbar:
+                for data in response.iter_content(chunk_size=1024):
+                    size = f.write(data)
+                    pbar.update(size)
+
+            # Only move the file if download was successful
+            os.replace(temp_path, dest_path)
+            logging.info(f"✅ download finished: {dest_path}")
+        except requests.RequestException as e:
+            logging.error(f"❌ download fail: {e}")
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            raise
         except Exception as e:
             logging.error(f"❌ download fail: {e}")
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
             raise
 
     def extract_text(self, img, lang='eng'):
