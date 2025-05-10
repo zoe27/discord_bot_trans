@@ -21,25 +21,40 @@ class TesseractManager:
             self.download_and_extract()
 
     def download_and_extract(self):
-        url = "https://github.com/UB-Mannheim/tesseract/releases/download/v5.4.0.20240606/tesseract-ocr-w64-setup-5.4.0.20240606.exe"
+        url = "https://github.com/UB-Mannheim/tesseract/releases/download/v5.3.3.20231005/tesseract-ocr-w64-setup-v5.3.3.20231005.exe"
         exe_path = os.path.join(self.tesseract_dir, "tesseract_setup.exe")
 
         logging.info(f"🔄 Downloading Tesseract from {url} ... and save to {exe_path}")
 
-        # 下载文件
-        urllib.request.urlretrieve(url, exe_path)
-
-        logging.info(f"🔄 Download completed. Installing Tesseract ...")
-
-        # 安装 Tesseract (静默安装)
-        import subprocess
         try:
-            subprocess.run([exe_path, '/S', f'/D={self.tesseract_dir}'], check=True)
+            # Download with progress check
+            urllib.request.urlretrieve(url, exe_path)
+
+            logging.info("📦 Installing Tesseract...")
+
+            # Silent installation
+            import subprocess
+            result = subprocess.run([exe_path, '/S', f'/D={self.tesseract_dir}'],
+                                    capture_output=True,
+                                    text=True)
+            logging.info(result.stdout)
+            if result.returncode != 0:
+                raise subprocess.CalledProcessError(
+                    result.returncode,
+                    result.args,
+                    result.stdout,
+                    result.stderr
+                )
+
+        except urllib.error.URLError as e:
+            logging.error(f"Download failed: {e}")
+            raise
         except subprocess.CalledProcessError as e:
-            logging.info(f"Error during installation: {e}")
+            logging.error(f"Installation failed: {e}")
             raise
         finally:
-            os.remove(exe_path)
+            if os.path.exists(exe_path):
+                os.remove(exe_path)
 
         logging.info("Tesseract downloaded and installed.")
 
