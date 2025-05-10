@@ -80,13 +80,28 @@ class OcrEngine:
             # Only move the file if download was successful
             os.replace(temp_path, dest_path)
             logging.info(f"✅ download finished: {dest_path}")
-        except requests.RequestException as e:
-            logging.error(f"❌ download fail: {e}")
+        except requests.ConnectionError as e:
+            logging.error(f"❌ network connection error: {e}")
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            raise
+        except requests.Timeout as e:
+            logging.error(f"❌ download timeout: {e}")
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            raise
+        except requests.HTTPError as e:
+            logging.error(f"❌ HTTP error occurred: {e}")
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            raise
+        except IOError as e:
+            logging.error(f"❌ file operation error: {e}")
             if os.path.exists(temp_path):
                 os.remove(temp_path)
             raise
         except Exception as e:
-            logging.error(f"❌ download fail: {e}")
+            logging.error(f"❌ unexpected error: {e}")
             if os.path.exists(temp_path):
                 os.remove(temp_path)
             raise
