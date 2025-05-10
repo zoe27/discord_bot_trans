@@ -24,8 +24,11 @@ jobs:
           pyinstaller --onefile --windowed --name ScreenTranslator ^
             --add-data "core/tessdata;tessdata" core/main.py
 
+      - name: List files in dist directory (Debug)
+        run: dir dist  # 检查是否生成了 exe 文件
+
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ScreenTranslator-exe
-          path: dist\ScreenTranslator.exe  # 使用正确的路径分隔符（Windows）
+          path: dist/ScreenTranslator.exe  # 确保路径正确，且文件存在
