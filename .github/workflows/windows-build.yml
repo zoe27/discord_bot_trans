@@ -24,12 +24,7 @@ jobs:
 
       - name: Build EXE
         run: |
-          pyinstaller --onefile --windowed --name ScreenTranslator ^
-            --add-data "core/tessdata;tessdata" ^
-            --hidden-import PyQt5 ^
-            --hidden-import pytesseract ^
-            --clean ^
-            core/main.py
+          pyinstaller --onefile --windowed --name ScreenTranslator --hidden-import PyQt5 --hidden-import pytesseract --clean core/main.py
 
       - name: List files in dist directory
         run: dir dist
