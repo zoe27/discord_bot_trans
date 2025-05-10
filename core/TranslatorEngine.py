@@ -26,4 +26,4 @@ class TranslatorEngine:
             return result.text
         except Exception as e:
             # 出错返回提示
-            return f"翻译失败: {str(e)}"
+            return f"translation failure: {str(e)}"

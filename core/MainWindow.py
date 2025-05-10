@@ -65,7 +65,7 @@ class MainWindow(QWidget):
         self.last_text = ""
 
     def initUI(self):
-        self.setWindowTitle('实时区域监控翻译')
+        self.setWindowTitle('translation area')
         self.setGeometry(100, 100, 800, 600)
 
         layout = QVBoxLayout()
@@ -75,29 +75,29 @@ class MainWindow(QWidget):
 
         self.src_lang = QComboBox()
         self.src_lang.addItems(self.languages.keys())
-        self.src_lang.setCurrentText('英语')
+        self.src_lang.setCurrentText('English')
         lang_layout.addWidget(self.src_lang)
 
         self.dest_lang = QComboBox()
         self.dest_lang.addItems(self.languages.keys())
-        self.dest_lang.setCurrentText('中文')
+        self.dest_lang.setCurrentText('Chinese')
         lang_layout.addWidget(self.dest_lang)
 
         layout.addLayout(lang_layout)
 
         # 按钮：点击后开始选择区域
-        self.btn_select = QPushButton('选择实时翻译区域', self)
+        self.btn_select = QPushButton('select the area', self)
         self.btn_select.clicked.connect(self.select_area)
         layout.addWidget(self.btn_select)
 
         # 显示识别出的原文
         self.text_original = QTextEdit(self)
-        self.text_original.setPlaceholderText('识别到的原文')
+        self.text_original.setPlaceholderText('source text')
         layout.addWidget(self.text_original)
 
         # 显示翻译后的内容
         self.text_translated = QTextEdit(self)
-        self.text_translated.setPlaceholderText('翻译后的文本')
+        self.text_translated.setPlaceholderText('translated text')
         layout.addWidget(self.text_translated)
 
         self.setLayout(layout)
@@ -113,7 +113,7 @@ class MainWindow(QWidget):
         """Callback when area is selected"""
         self.selected_rect = rect
         if self.selected_rect:
-            logging.info(f"已选定区域: {rect}")
+            logging.info(f"selected area: {rect}")
             self.overlay.set_rect(rect)  # 显示浮窗选区
             self.show()
         self.timer.start(1000)  # 每秒处理一次
@@ -121,7 +121,7 @@ class MainWindow(QWidget):
     def process(self):
         # print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 运行截图")
         if not self.selected_rect:
-            logging.warning("没有选定区域")
+            logging.warning("no area selected")
             return
 
         img = self.capture.capture_area(self.selected_rect)
