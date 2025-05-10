@@ -10,6 +10,7 @@ from OcrEngine import OcrEngine
 from TranslatorEngine import TranslatorEngine
 from OverlayDisplay import OverlayDisplay
 import logging
+from TesseractManager import TesseractManager
 
 
 class MainWindow(QWidget):

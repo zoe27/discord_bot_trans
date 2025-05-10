@@ -5,6 +5,8 @@ import requests
 from tqdm import tqdm
 import logging
 
+from core.TesseractManager import TesseractManager
+
 
 class OcrEngine:
     # 语言代码到训练数据文件的映射
@@ -34,6 +36,11 @@ class OcrEngine:
             # 根据操作系统选择合适的用户目录
             if sys.platform == 'win32':
                 self.tessdata_dir = os.path.join(os.getenv('APPDATA'), 'ScreenTranslator', 'tessdata')
+
+                # 初始化 Tesseract（自动下载如不存在）
+                self.tesseract_mgr = TesseractManager()
+                self.tesseract_mgr.ensure_tesseract()
+                pytesseract.pytesseract.tesseract_cmd = self.tesseract_mgr.get_tesseract_cmd()
             elif sys.platform == 'darwin':
                 self.tessdata_dir = os.path.expanduser('~/Library/Application Support/ScreenTranslator/tessdata')
             else:  # Linux and others
