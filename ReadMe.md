@@ -1,5 +1,5 @@
 ## 环境配置
-1. **安装 Python**: 确保已安装 Python 3.8 或更高版本。
+1. **安装 Python**: 确保已安装 Python 3.8 或更高版本，本代码使用的是3.11。
 2. **安装依赖**: 使用以下命令安装项目所需的依赖库：
    ```bash
    pip install -r requirements.txt

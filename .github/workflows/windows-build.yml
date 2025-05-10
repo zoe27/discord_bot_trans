@@ -28,4 +28,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ScreenTranslator-exe
-          path: dist\ScreenTranslator.exe  # 使用正确的路径分隔符（Windows）
+          path: winbuild\ScreenTranslator.exe  # 使用正确的路径分隔符（Windows）
