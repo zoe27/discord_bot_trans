@@ -2,7 +2,7 @@ name: Build Windows EXE
 
 on:
   push:
-    branches: [ main ]  # 如使用其他分支，请修改
+    branches: [ master ]  # 如使用其他分支，请修改
 
 jobs:
   build:
