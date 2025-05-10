@@ -5,7 +5,7 @@ import requests
 from tqdm import tqdm
 import logging
 
-from core.TesseractManager import TesseractManager
+from TesseractManager import TesseractManager
 
 
 class OcrEngine:
