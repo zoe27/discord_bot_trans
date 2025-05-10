@@ -21,7 +21,7 @@ class TesseractManager:
             self.download_and_extract()
 
     def download_and_extract(self):
-        url = "https://github.com/UB-Mannheim/tesseract/releases/download/v5.3.3.20231005/tesseract-ocr-w64-setup-v5.3.3.20231005.exe"
+        url = "https://github.com/UB-Mannheim/tesseract/releases/download/v5.4.0.20240606/tesseract-ocr-w64-setup-5.4.0.20240606.exe"
         exe_path = os.path.join(self.tesseract_dir, "tesseract_setup.exe")
 
         logging.info(f"🔄 Downloading Tesseract from {url} ... and save to {exe_path}")
