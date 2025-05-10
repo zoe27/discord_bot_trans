@@ -17,18 +17,25 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install pyinstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
 
       - name: Build EXE
         run: |
           pyinstaller --onefile --windowed --name ScreenTranslator ^
-            --add-data "core/tessdata;tessdata" core/main.py
+            --add-data "core/tessdata;tessdata" ^
+            --hidden-import PyQt5 ^
+            --hidden-import pytesseract ^
+            --clean ^
+            core/main.py
 
-      - name: List files in dist directory (Debug)
-        run: dir dist  # 调试：确保文件已生成
+      - name: List files in dist directory
+        run: dir dist
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2  # 使用 v2 版本
+        uses: actions/upload-artifact@v2
         with:
           name: ScreenTranslator-exe
-          path: dist/ScreenTranslator.exe  # 确保文件路径正确
+          path: dist/ScreenTranslator.exe
