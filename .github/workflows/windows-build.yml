@@ -2,7 +2,7 @@ name: Build Windows EXE
 
 on:
   push:
-    branches: [ master ]  # 如使用其他分支，请修改
+    branches: [ master ]
 
 jobs:
   build:
@@ -25,10 +25,10 @@ jobs:
             --add-data "core/tessdata;tessdata" core/main.py
 
       - name: List files in dist directory (Debug)
-        run: dir dist  # 检查是否生成了 exe 文件
+        run: dir dist  # 调试：确保文件已生成
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2  # 使用 v2 版本
         with:
           name: ScreenTranslator-exe
-          path: dist/ScreenTranslator.exe  # 确保路径正确，且文件存在
+          path: dist/ScreenTranslator.exe  # 确保文件路径正确
