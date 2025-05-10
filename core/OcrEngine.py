@@ -40,8 +40,9 @@ class OcrEngine:
                 # 初始化 Tesseract（自动下载如不存在）
                 self.tesseract_mgr = TesseractManager()
                 self.tesseract_mgr.ensure_tesseract()
-                logging.info(f"📁 configure the tesseract path: {self.tesseract_mgr.get_tesseract_cmd()}")
-                pytesseract.pytesseract.tesseract_cmd = self.tesseract_mgr.get_tesseract_cmd()
+                # logging.info(f"📁 configure the tesseract path: {self.tesseract_mgr.get_tesseract_cmd()}")
+                pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+                logging.info(f"📁 configure the tesseract path: {pytesseract.pytesseract.tesseract_cmd}")
             elif sys.platform == 'darwin':
                 self.tessdata_dir = os.path.expanduser('~/Library/Application Support/ScreenTranslator/tessdata')
             else:  # Linux and others
