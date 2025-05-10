@@ -9,7 +9,11 @@ from MainWindow import MainWindow
 
 def setup_logging():
     if getattr(sys, 'frozen', False):  # .app / EXE 打包后
-        log_dir = os.path.expanduser('~/Library/Logs/ScreenTranslator')
+        # log_dir = os.path.expanduser('~/Library/Logs/ScreenTranslator')
+        if sys.platform == 'win32':
+            log_dir = os.path.join(os.getenv('APPDATA'), 'ScreenTranslator')
+        else:  # macOS
+            log_dir = os.path.expanduser('~/Library/Logs/ScreenTranslator')
     else:  # 脚本运行
         log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
 
