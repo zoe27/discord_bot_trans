@@ -3,6 +3,13 @@ import os
 import urllib.request
 import platform
 
+'''
+    only for window 
+    This module handles the automatic download and installation of 
+    Tesseract OCR engine on Windows. It manages the Tesseract
+    executable path and ensures it's properly set up for the application.
+'''
+
 class TesseractManager:
     def __init__(self):
         self.tesseract_dir = os.path.join(os.getenv('APPDATA'), 'ScreenTranslator', 'tesseract')

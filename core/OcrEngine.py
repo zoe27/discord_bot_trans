@@ -7,6 +7,9 @@ import logging
 
 from TesseractManager import TesseractManager
 
+'''
+    识别文字
+'''
 
 class OcrEngine:
     # 语言代码到训练数据文件的映射

@@ -87,7 +87,7 @@ class MainWindow(QWidget):
         layout.addLayout(lang_layout)
 
         # 按钮：点击后开始选择区域
-        self.btn_select = QPushButton('select the area', self)
+        self.btn_select = QPushButton('draw rectangle', self)
         self.btn_select.clicked.connect(self.select_area)
         layout.addWidget(self.btn_select)
 

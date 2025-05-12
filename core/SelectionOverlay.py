@@ -1,8 +1,7 @@
 # SelectionOverlay.py
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QGuiApplication
-from SelectionFrame import SelectionFrame  # ✅ 新增导入
+from PyQt5.QtGui import QPainter, QPen, QColor, QGuiApplication
 
 class SelectionWindow(QWidget):
     def __init__(self, parent):
