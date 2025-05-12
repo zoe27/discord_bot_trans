@@ -1,6 +1,5 @@
 # MainWindow.py
 # 主界面，负责管理整体流程：选区、截图、OCR识别、翻译显示
-from datetime import datetime
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTextEdit, QApplication, QComboBox, QHBoxLayout
 from PyQt5.QtCore import QTimer, QRect
@@ -8,9 +7,8 @@ from SelectionOverlay import SelectionWindow
 from ScreenCapture import ScreenCapture
 from OcrEngine import OcrEngine
 from TranslatorEngine import TranslatorEngine
-from OverlayDisplay import OverlayDisplay
 import logging
-from TesseractManager import TesseractManager
+from DraggableOverlay import DraggableOverlay
 
 
 class MainWindow(QWidget):
@@ -57,7 +55,7 @@ class MainWindow(QWidget):
         self.translator = TranslatorEngine()
 
         # 初始化浮窗
-        self.overlay = OverlayDisplay()
+        self.draggable_overlay = None
 
         # 保存上一次识别到的文字，用来对比
         self.last_text = ""
@@ -113,9 +111,18 @@ class MainWindow(QWidget):
     def on_area_selected(self, rect: QRect):
         """Callback when area is selected"""
         self.selected_rect = rect
+        # if self.selected_rect:
+        #     logging.info(f"selected area: {rect}")
+        #     self.overlay.set_rect(rect)  # 显示浮窗选区
+        #     self.show()
+
         if self.selected_rect:
             logging.info(f"selected area: {rect}")
-            self.overlay.set_rect(rect)  # 显示浮窗选区
+            # Create draggable overlay instead of normal overlay
+            if self.draggable_overlay:
+                self.draggable_overlay.close()
+            self.draggable_overlay = DraggableOverlay(rect)
+            self.draggable_overlay.show()
             self.show()
         self.timer.start(1000)  # 每秒处理一次
 
@@ -124,6 +131,12 @@ class MainWindow(QWidget):
         if not self.selected_rect:
             logging.warning("no area selected")
             return
+
+        if not self.selected_rect or not self.draggable_overlay:
+            return
+
+        self.selected_rect = self.draggable_overlay.geometry()
+
 
         try:
             # 获取截图
