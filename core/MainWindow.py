@@ -168,7 +168,7 @@ class MainWindow(QWidget):
                     dest_lang = self.languages[self.dest_lang.currentText()]
 
                     # Translate
-                    translation = self.translator.translate(
+                    translation = self.translator.youdao_translate(
                         text,
                         src=self.translator_codes[src_lang],
                         dest=self.translator_codes[dest_lang]
