@@ -124,10 +124,9 @@ class MainWindow(QWidget):
             self.draggable_overlay = DraggableOverlay(rect)
             self.draggable_overlay.show()
             self.show()
-        self.timer.start(1000)  # 每秒处理一次
+        self.timer.start(500)  # 每秒处理一次
 
     def process(self):
-        # print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 运行截图")
         if not self.selected_rect:
             logging.warning("no area selected")
             return
@@ -135,23 +134,27 @@ class MainWindow(QWidget):
         if not self.selected_rect or not self.draggable_overlay:
             return
 
+        # Don't process if overlay is being dragged
+        if self.draggable_overlay.dragging:
+            logging.debug("Overlay is being dragged, skipping process")
+            return
+
         self.selected_rect = self.draggable_overlay.geometry()
 
-
         try:
-            # 获取截图
+            # Get screenshot
             img = self.capture.capture_area(self.selected_rect)
             if img is None:
                 logging.error("Failed to capture screen area")
                 return
 
-            # OCR识别
+            # OCR recognition
             text = self.ocr.extract_text(img, self.languages[self.src_lang.currentText()])
             if not text:
                 logging.debug("OCR result is empty")
                 return
 
-            # 比较文本是否有实质变化（忽略空白字符的差异）
+            # Compare text (ignoring whitespace)
             current_text = text.strip()
             last_text = self.last_text.strip()
 
@@ -159,12 +162,12 @@ class MainWindow(QWidget):
                 self.last_text = text
                 self.text_original.setPlainText(text)
 
-                # 获取源语言和目标语言代码
+                # Get source and target language codes
                 try:
                     src_lang = self.languages[self.src_lang.currentText()]
                     dest_lang = self.languages[self.dest_lang.currentText()]
 
-                    # 进行翻译
+                    # Translate
                     translation = self.translator.translate(
                         text,
                         src=self.translator_codes[src_lang],
