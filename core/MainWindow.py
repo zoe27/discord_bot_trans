@@ -20,8 +20,8 @@ class MainWindow(QWidget):
         self.languages = {
             'Chinese': 'chi_sim',  # Aligned with LANG_MAPPINGS
             'English': 'eng',
-            # 'Japanese': 'jpn',
-            # 'Korean': 'kor',
+            'Japanese': 'jpn',
+            'Korean': 'kor',
             # 'French': 'fra',
             # 'German': 'deu',
             # 'Spanish': 'spa',
@@ -32,8 +32,8 @@ class MainWindow(QWidget):
         self.translator_codes = {
             'chi_sim': 'zh-cn',
             'eng': 'en',
-            # 'jpn': 'ja',
-            # 'kor': 'ko',
+            'jpn': 'ja',
+            'kor': 'ko',
             # 'fra': 'fr',
             # 'deu': 'de',
             # 'spa': 'es',
@@ -168,7 +168,7 @@ class MainWindow(QWidget):
                     dest_lang = self.languages[self.dest_lang.currentText()]
 
                     # Translate
-                    translation = self.translator.youdao_translate(
+                    translation = self.translator.translate(
                         text,
                         src=self.translator_codes[src_lang],
                         dest=self.translator_codes[dest_lang]
