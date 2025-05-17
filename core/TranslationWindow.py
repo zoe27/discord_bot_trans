@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QCheckBox
 from PyQt5.QtCore import QTimer, Qt, QPoint
 from PyQt5.QtGui import QMouseEvent
 import logging
@@ -66,21 +66,65 @@ class TranslationWindow(QWidget):
         # Main layout
         layout = QVBoxLayout()
 
+        # Source and target language selection
+        lang_layout = QHBoxLayout()
+
+        self.src_lang = QComboBox()
+        self.src_lang.addItems(self.languages.keys())
+        self.src_lang.setCurrentText('English')
+        self.src_lang.setStyleSheet("background-color: white; color: black;")
+        lang_layout.addWidget(self.src_lang)
+
+        self.dest_lang = QComboBox()
+        self.dest_lang.addItems(self.languages.keys())
+        self.dest_lang.setCurrentText('Chinese')
+        self.dest_lang.setStyleSheet("background-color: white; color: black;")
+        lang_layout.addWidget(self.dest_lang)
+
+        # Show original text checkbox
+        self.show_original = QCheckBox("Show Original")
+        self.show_original.setStyleSheet("QCheckBox { color: white; }")
+        self.show_original.stateChanged.connect(self.handle_show_original)
+        lang_layout.addWidget(self.show_original)
+
+        layout.addLayout(lang_layout)
+
+        # Original text label (hidden by default)
+        self.original_label = QLabel()
+        self.original_label.setStyleSheet("""
+                    QLabel {
+                        background-color: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        padding: 10px;
+                        border-radius: 5px;
+                        min-width: 200px;
+                    }
+                """)
+        self.original_label.hide()
+        layout.addWidget(self.original_label)
+
         # Translation label
         self.translation_label = QLabel()
         self.translation_label.setStyleSheet("""
-            QLabel {
-                background-color: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 10px;
-                border-radius: 5px;
-                min-width: 200px;
-                cursor: size_all;
-            }
-        """)
+                    QLabel {
+                        background-color: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        padding: 10px;
+                        border-radius: 5px;
+                        min-width: 200px;
+                    }
+                """)
         layout.addWidget(self.translation_label)
 
         self.setLayout(layout)
+
+    def handle_show_original(self, state):
+        """Handle show original checkbox state change"""
+        if state:
+            self.original_label.setText(self.last_text)
+            self.original_label.show()
+        else:
+            self.original_label.hide()
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
@@ -134,8 +178,10 @@ class TranslationWindow(QWidget):
                 self.logger.error("Failed to capture screen area")
                 return
 
-            # Perform OCR
-            text = self.ocr.extract_text(img, 'eng')
+                # Perform OCR
+            src_lang = self.languages[self.src_lang.currentText()]
+            text = self.ocr.extract_text(img, src_lang)
+
             if not text:
                 self.logger.debug("OCR result is empty")
                 return
@@ -145,13 +191,25 @@ class TranslationWindow(QWidget):
             last_text = self.last_text.strip()
 
             # Only proceed with translation if text has changed
+            logging.info(f"Current text: {current_text}, Last text: {last_text}")
             if current_text and current_text != last_text:
                 self.last_text = text
+                # Update original text if showing
+                if self.show_original.isChecked():
+                    self.original_label.setText(text)
+                    self.original_label.show()
+                else:
+                    self.original_label.hide()
+
+                # Get translation language codes
+                src_lang_code = self.translator_codes[src_lang]
+                dest_lang_code = self.translator_codes[self.languages[self.dest_lang.currentText()]]
+
                 # Translate the text
                 translation = self.translator.translate(
                     text,
-                    src='en',
-                    dest='zh-cn'
+                    src=src_lang_code,
+                    dest=dest_lang_code
                 )
                 self.translation_label.setText(translation)
                 self.logger.debug("Translation updated successfully")
@@ -159,4 +217,5 @@ class TranslationWindow(QWidget):
                 self.logger.debug("Text unchanged, skipping translation")
 
         except Exception as e:
+            print("Error during processing:", str(e))
             self.logger.error(f"Process error: {str(e)}")
