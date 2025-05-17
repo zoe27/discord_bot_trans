@@ -9,6 +9,8 @@ from SelectionOverlay import SelectionWindow
 from DraggableOverlay import DraggableOverlay
 import logging
 
+from Chat import TranslatorApp
+
 
 class DraggableWindow(QWidget):
     def __init__(self):
@@ -17,11 +19,20 @@ class DraggableWindow(QWidget):
         self.setFixedSize(500, 80)
         self.setStyleSheet("background-color: #f2f2f2; border-radius: 10px;")
 
+        # Position window at bottom-right corner of screen
+        screen = QDesktopWidget().screenGeometry()
+        window_geometry = self.geometry()
+        x = screen.width() - window_geometry.width() - 20  # 20px margin from right
+        y = screen.height() - window_geometry.height() - 40  # 40px margin from bottom
+        self.move(x, y)
+
         # Initialize selection related attributes
         # Initialize selection related attributes
         self.selection_window = None
         self.selected_rect = None
         self.draggable_overlay = None
+
+        self.window = TranslatorApp()
 
         self.initUI()
         self.oldPos = self.pos()
@@ -34,8 +45,8 @@ class DraggableWindow(QWidget):
         icons = [
             ("🅧", self.on_close),
             ("🪟", self.on_button1),
-            ("🖥️", self.on_button2),
-            ("⬚", self.on_button3),
+            ("🖥️", self.translation),
+            ("⬚", self.screen_trans),
             ("⛶", self.on_button4),
             ("⧉", self.on_button5),
         ]
@@ -74,10 +85,13 @@ class DraggableWindow(QWidget):
     def on_button1(self):
         print("点击了按钮 1")
 
-    def on_button2(self):
-        print("点击了按钮 2")
+    def translation(self):
+        if self.window.isVisible():
+            self.window.hide()
+        else:
+            self.window.show()
 
-    def on_button3(self):
+    def screen_trans(self):
         """Implement area selection functionality"""
         self.hide()
         QApplication.processEvents()

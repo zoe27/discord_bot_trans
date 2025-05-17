@@ -72,18 +72,82 @@ class TranslationWindow(QWidget):
         self.src_lang = QComboBox()
         self.src_lang.addItems(self.languages.keys())
         self.src_lang.setCurrentText('English')
-        self.src_lang.setStyleSheet("background-color: white; color: black;")
+        self.src_lang.setStyleSheet("""
+                    QComboBox {
+                        background-color: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        padding: 5px;
+                        border-radius: 5px;
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                    }
+                    QComboBox::drop-down {
+                        border: none;
+                        width: 20px;
+                    }
+                    QComboBox::down-arrow {
+                        width: 12px;
+                        height: 12px;
+                        border: 2px solid white;
+                        border-width: 0 2px 2px 0;
+                        transform: rotate(45deg);
+                        margin-top: -5px;
+                    }
+                    QComboBox QAbstractItemView {
+                        background-color: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        selection-background-color: rgba(255, 255, 255, 0.2);
+                    }
+                """)
+
         lang_layout.addWidget(self.src_lang)
 
         self.dest_lang = QComboBox()
         self.dest_lang.addItems(self.languages.keys())
         self.dest_lang.setCurrentText('Chinese')
-        self.dest_lang.setStyleSheet("background-color: white; color: black;")
+        self.dest_lang.setStyleSheet("""
+                    QComboBox {
+                        background-color: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        padding: 5px;
+                        border-radius: 5px;
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                    }
+                    QComboBox::drop-down {
+                        border: none;
+                    }
+                    QComboBox::down-arrow {
+                        image: none;
+                    }
+                    QComboBox QAbstractItemView {
+                        background-color: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        selection-background-color: rgba(255, 255, 255, 0.2);
+                    }
+                """)
         lang_layout.addWidget(self.dest_lang)
 
         # Show original text checkbox
         self.show_original = QCheckBox("Show Original")
-        self.show_original.setStyleSheet("QCheckBox { color: white; }")
+        self.show_original.setStyleSheet("""
+                    QCheckBox {
+                        color: white;
+                        background-color: rgba(0, 0, 0, 0.8);
+                        padding: 5px;
+                        border-radius: 5px;
+                    }
+                    QCheckBox::indicator {
+                        width: 16px;
+                        height: 16px;
+                    }
+                    QCheckBox::indicator:unchecked {
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        background: rgba(0, 0, 0, 0.8);
+                    }
+                    QCheckBox::indicator:checked {
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        background: rgba(255, 255, 255, 0.8);
+                    }
+                """)
         self.show_original.stateChanged.connect(self.handle_show_original)
         lang_layout.addWidget(self.show_original)
 

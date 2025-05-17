@@ -15,7 +15,6 @@ from googletrans import Translator
 class FloatingWindow(QWidget):
     def __init__(self):
         super().__init__()
-        super().__init__()
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setCursor(Qt.SizeAllCursor)  # Set cursor to four-directional arrow
@@ -59,9 +58,12 @@ class TranslatorApp(QWidget):
     def __init__(self):
         super().__init__()
         self.logger = logging.getLogger(__name__)
+        self.dragging = False
+        self.offset = None
 
-        self.setWindowTitle("实时翻译器")
-        self.resize(500, 400)
+        # Remove window decorations and keep on top
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.resize(450, 200)  # Smaller default size
 
         self.translator = Translator()
         self.last_text = ""  # 存储上次翻译的文本
@@ -71,27 +73,49 @@ class TranslatorApp(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.check_and_translate)
         self.timer.start(1000)  # 每秒检查一次
-
         self.init_ui()
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.dragging = True
+            self.offset = event.pos()
+
+    def mouseMoveEvent(self, event):
+        if self.dragging:
+            new_pos = event.globalPos() - self.offset
+            self.move(new_pos)
+            # Update floating window position
+            self.update_floating_window_position()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.dragging = False
+
+    def update_floating_window_position(self):
+        pos = self.combined_text.mapToGlobal(self.combined_text.rect().topLeft())
+        self.floating_window.move(pos.x(), pos.y() - self.floating_window.height())
+
     def init_ui(self):
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()
+        layout.setContentsMargins(5, 5, 5, 5)  # Reduce margins for a cleaner look
+        # Left side - Text input
+        text_container = QWidget()
+        text_container.setMinimumWidth(300)  # Slightly smaller width
+        text_layout = QVBoxLayout(text_container)
 
-        # 语言选择布局
-        lang_layout = QHBoxLayout()
+        self.combined_text = QTextEdit()
+        self.combined_text.setPlaceholderText("在此输入要翻译的内容")
+        text_layout.addWidget(self.combined_text)
+        layout.addWidget(text_container)
 
-        # 自动翻译开关
-        self.auto_translate = QPushButton("停止自动翻译")
-        self.auto_translate.setCheckable(True)
-        self.auto_translate.setChecked(True)
-        self.auto_translate.clicked.connect(self.toggle_auto_translate)
-        lang_layout.addWidget(self.auto_translate)
+        # Right side - Language selection
+        lang_container = QWidget()
+        lang_container.setMaximumWidth(80)  # Slightly smaller width
+        lang_layout = QVBoxLayout(lang_container)
+        lang_layout.setContentsMargins(0, 0, 0, 0)
+        lang_layout.setAlignment(Qt.AlignTop)
 
-        # 复制按钮
-        self.copy_button = QPushButton("复制翻译")
-        self.copy_button.clicked.connect(self.copy_translation)
-        lang_layout.addWidget(self.copy_button)
-
+        # Language selector
         self.lang_combo = QComboBox()
         self.lang_combo.addItems([
             "zh-CN",  # 中文
@@ -104,25 +128,12 @@ class TranslatorApp(QWidget):
         self.lang_combo.currentTextChanged.connect(self.on_language_changed)
         lang_layout.addWidget(self.lang_combo)
 
-        layout.addLayout(lang_layout)
-
-        # 合并的文本框
-        self.combined_text = QTextEdit()
-        self.combined_text.setPlaceholderText("在此输入要翻译的内容")
-        layout.addWidget(self.combined_text)
-
+        layout.addWidget(lang_container)
         self.setLayout(layout)
 
-    def toggle_auto_translate(self):
-        if self.auto_translate.isChecked():
-            self.timer.start()
-            self.auto_translate.setText("停止自动翻译")
-        else:
-            self.timer.stop()
-            self.auto_translate.setText("开始自动翻译")
-
     def check_and_translate(self):
-        if not self.auto_translate.isChecked():
+        # Skip translation if window is being dragged
+        if self.dragging:
             return
 
         text = self.combined_text.toPlainText()
@@ -153,9 +164,13 @@ class TranslatorApp(QWidget):
             # 更新悬浮窗内容
             self.floating_window.set_text(translated_text)
             # Only set initial position if window hasn't been moved by user
+            # if not self.floating_window.dragging:
+            #     pos = self.combined_text.mapToGlobal(self.combined_text.rect().topLeft())
+            #     self.floating_window.move(pos.x(), pos.y() - self.floating_window.height())
+            # self.floating_window.show()
+
             if not self.floating_window.dragging:
-                pos = self.combined_text.mapToGlobal(self.combined_text.rect().topLeft())
-                self.floating_window.move(pos.x(), pos.y() - self.floating_window.height())
+                self.update_floating_window_position()
             self.floating_window.show()
             # 更新文本框内容
             # Keep only the input text in the text box
@@ -175,8 +190,8 @@ class TranslatorApp(QWidget):
             self.logger.info("翻译结果已复制到剪贴板")
 
 
-# if __name__ == "__main__":
-#     app = QApplication(sys.argv)
-#     window = TranslatorApp()
-#     window.show()
-#     sys.exit(app.exec_())
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = TranslatorApp()
+    window.show()
+    sys.exit(app.exec_())
