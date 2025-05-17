@@ -80,9 +80,12 @@ class TranslatorEngine:
             'curtime': curtime,
         }
 
+        start_time = time.time()
         response = requests.post(url, data=data, headers=headers)
         result = response.json()
 
         # 提取翻译结果
         translation = result.get('translation', [])
+        elapsed_time = time.time() - start_time
+        logging.info(f"youdao Translation took {elapsed_time:.2f} seconds")
         return translation[0] if translation else "翻译失败"
