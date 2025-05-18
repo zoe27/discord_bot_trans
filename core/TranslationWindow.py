@@ -62,6 +62,7 @@ class TranslationWindow(QWidget):
         """Initialize the UI components"""
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
 
         # Main layout
         layout = QVBoxLayout()
