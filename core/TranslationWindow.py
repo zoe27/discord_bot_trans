@@ -2,6 +2,8 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox
 from PyQt5.QtCore import QTimer, Qt, QPoint
 from PyQt5.QtGui import QMouseEvent
 import logging
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 from ScreenCapture import ScreenCapture
 from OcrEngine import OcrEngine
@@ -23,36 +25,33 @@ class TranslationWindow(QWidget):
         # Mouse tracking variables
         self.dragging = False
         self.drag_position = QPoint()
-        self.last_process_time = 0
+        self.last_process_time = time.time()
+        self.process_interval = 0.5  # 处理间隔500ms
+        self.translation_cache = {}
+        self.thread_pool = ThreadPoolExecutor(max_workers=1)
+
         self.setCursor(Qt.SizeAllCursor)
         self.setMouseTracking(True)
 
         # Initialize timer for periodic updates
         self.timer = QTimer()
-        self.timer.timeout.connect(self.process)
+        self.timer.timeout.connect(self.check_process)
+        self.timer.setInterval(500)
 
         # 支持的语言代码映射
-        # Language code mappings that align with OCR language codes
         self.languages = {
-            'Chinese': 'chi_sim',  # Aligned with LANG_MAPPINGS
+            'Chinese': 'chi_sim',
             'English': 'eng',
             'Japanese': 'jpn',
             'Korean': 'kor',
-            # 'French': 'fra',
-            # 'German': 'deu',
-            # 'Spanish': 'spa',
             'Chinese (Traditional)': 'chi_tra'
         }
 
-        # Mapping from OCR language codes to Google Translate language codes
         self.translator_codes = {
             'chi_sim': 'zh-cn',
             'eng': 'en',
             'jpn': 'ja',
             'kor': 'ko',
-            # 'fra': 'fr',
-            # 'deu': 'de',
-            # 'spa': 'es',
             'chi_tra': 'zh-tw'
         }
 
@@ -154,7 +153,7 @@ class TranslationWindow(QWidget):
 
         layout.addLayout(lang_layout)
 
-        # Original text label (hidden by default)
+        # Original text label
         self.original_label = QLabel()
         self.original_label.setStyleSheet("""
                     QLabel {
@@ -183,8 +182,68 @@ class TranslationWindow(QWidget):
 
         self.setLayout(layout)
 
+    def check_process(self):
+        """检查是否需要处理"""
+        current_time = time.time()
+        if current_time - self.last_process_time >= self.process_interval and not self.dragging:
+            self.process()
+            self.last_process_time = current_time
+
+    def process(self):
+        """处理翻译请求"""
+        if not self.selected_rect:
+            return
+
+        try:
+            img = self.capture.capture_area(self.selected_rect)
+            if img is None:
+                return
+
+            src_lang = self.languages[self.src_lang.currentText()]
+            text = self.ocr.extract_text(img, src_lang)
+
+            if not text:
+                return
+
+            current_text = text.strip()
+            if current_text == self.last_text.strip():
+                return
+
+            src_lang_code = self.translator_codes[src_lang]
+            dest_lang_code = self.translator_codes[self.languages[self.dest_lang.currentText()]]
+
+            # 检查缓存
+            cache_key = f"{current_text}_{src_lang_code}_{dest_lang_code}"
+            if cache_key in self.translation_cache:
+                self.update_ui(text, self.translation_cache[cache_key])
+                return
+
+            # 在线程池中执行翻译
+            self.thread_pool.submit(self.translate_in_background, text, src_lang_code, dest_lang_code, cache_key)
+
+        except Exception as e:
+            self.logger.error(f"Process error: {str(e)}")
+
+    def translate_in_background(self, text, src_lang_code, dest_lang_code, cache_key):
+        """在后台线程中执行翻译"""
+        try:
+            translation = self.translator.translate(text, src=src_lang_code, dest=dest_lang_code)
+            self.translation_cache[cache_key] = translation
+            self.update_ui(text, translation)
+        except Exception as e:
+            self.logger.error(f"Translation error: {str(e)}")
+
+    def update_ui(self, text, translation):
+        """更新UI界面"""
+        self.last_text = text
+        if self.show_original.isChecked():
+            self.original_label.setText(text)
+            self.original_label.show()
+        else:
+            self.original_label.hide()
+        self.translation_label.setText(translation)
+
     def handle_show_original(self, state):
-        """Handle show original checkbox state change"""
         if state:
             self.original_label.setText(self.last_text)
             self.original_label.show()
@@ -205,7 +264,6 @@ class TranslationWindow(QWidget):
     def mouseReleaseEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
             self.dragging = False
-            # Resume processing after drag ends
             event.accept()
 
     def on_area_selected(self, rect):
@@ -215,72 +273,7 @@ class TranslationWindow(QWidget):
             self.logger.warning("No area selected")
             return
 
-        # Show translation window
         if not self.isVisible():
             self.show()
-        # Position window near selected area
         self.move(rect.x(), rect.y() - self.height())
-
-        # Start the periodic update timer
-        self.timer.start(500)  # Check every 500ms
-
-    def process(self):
-        """Periodically process the selected area for updates"""
-        # Skip processing if dragging
-        if self.dragging:
-            # self.timer.stop()
-            return
-
-        self.selected_rect = self.draggable_overlay.geometry()
-
-        if not self.selected_rect:
-            return
-
-        try:
-            # Capture and process the selected area
-            img = self.capture.capture_area(self.selected_rect)
-            if img is None:
-                self.logger.error("Failed to capture screen area")
-                return
-
-                # Perform OCR
-            src_lang = self.languages[self.src_lang.currentText()]
-            text = self.ocr.extract_text(img, src_lang)
-
-            if not text:
-                self.logger.debug("OCR result is empty")
-                return
-
-            # Compare with last text (ignore whitespace)
-            current_text = text.strip()
-            last_text = self.last_text.strip()
-
-            # Only proceed with translation if text has changed
-            logging.info(f"Current text: {current_text}, Last text: {last_text}")
-            if current_text and current_text != last_text:
-                self.last_text = text
-                # Update original text if showing
-                if self.show_original.isChecked():
-                    self.original_label.setText(text)
-                    self.original_label.show()
-                else:
-                    self.original_label.hide()
-
-                # Get translation language codes
-                src_lang_code = self.translator_codes[src_lang]
-                dest_lang_code = self.translator_codes[self.languages[self.dest_lang.currentText()]]
-
-                # Translate the text
-                translation = self.translator.translate(
-                    text,
-                    src=src_lang_code,
-                    dest=dest_lang_code
-                )
-                self.translation_label.setText(translation)
-                self.logger.debug("Translation updated successfully")
-            else:
-                self.logger.debug("Text unchanged, skipping translation")
-
-        except Exception as e:
-            print("Error during processing:", str(e))
-            self.logger.error(f"Process error: {str(e)}")
+        self.timer.start()
