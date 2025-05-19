@@ -97,11 +97,10 @@ class TranslatorApp(QWidget):
         text_layout.addWidget(self.combined_text)
         layout.addWidget(text_container)
 
-        lang_container = QWidget()
-        lang_container.setMaximumWidth(80)
-        lang_layout = QVBoxLayout(lang_container)
-        lang_layout.setContentsMargins(0, 0, 0, 0)
-        lang_layout.setAlignment(Qt.AlignTop)
+        right_container = QWidget()
+        right_layout = QVBoxLayout(right_container)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setAlignment(Qt.AlignTop)
 
         self.lang_combo = QComboBox()
         self.lang_combo.addItems([
@@ -113,9 +112,28 @@ class TranslatorApp(QWidget):
             "de"
         ])
         self.lang_combo.currentTextChanged.connect(self.on_language_changed)
-        lang_layout.addWidget(self.lang_combo)
+        right_layout.addWidget(self.lang_combo)
 
-        layout.addWidget(lang_container)
+        copy_button = QPushButton("复制")
+        copy_button.clicked.connect(self.copy_translation)
+        copy_button.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 5px;
+                border-radius: 5px;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+            QPushButton:pressed {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+        """)
+        right_layout.addWidget(copy_button)
+
+        layout.addWidget(right_container)
         self.setLayout(layout)
 
     def check_and_translate(self):
