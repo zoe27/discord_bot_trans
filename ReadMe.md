@@ -37,5 +37,4 @@ ScreenTranslator is a Python-based screen translation tool that integrates scree
 - **翻译**: 使用 Google Translate 将识别的文字翻译为目标语言。
 
 ## 打包项目
-pyinstaller --onefile --windowed --name ScreenTranslator \
-  --add-data "core/tessdata:tessdata" core/main.py
+pyinstaller --onefile --windowed --name ScreenTranslator core/main.py

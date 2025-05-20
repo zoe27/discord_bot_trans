@@ -5,6 +5,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from PyQt5.QtWidgets import QApplication
 from MainWindow import MainWindow
+from Navigation import DraggableWindow
 
 
 def setup_logging():
@@ -35,8 +36,14 @@ def setup_logging():
 
 if __name__ == "__main__":
     setup_logging()
+    # app = QApplication(sys.argv)
+    # window = MainWindow()
+    # window.show()
+    # logging.info("🚀 应用启动")
+    # sys.exit(app.exec_())
+
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = DraggableWindow()
     window.show()
     logging.info("🚀 应用启动")
     sys.exit(app.exec_())
