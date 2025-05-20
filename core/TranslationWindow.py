@@ -191,14 +191,26 @@ class TranslationWindow(QWidget):
 
     def process(self):
         """处理翻译请求"""
+        self.selected_rect = self.draggable_overlay.geometry()
+
         if not self.selected_rect:
             return
 
         try:
-            img = self.capture.capture_area(self.selected_rect)
+            # Submit all heavy operations to thread pool
+            self.thread_pool.submit(self.process_in_background, self.selected_rect)
+        except Exception as e:
+            self.logger.error(f"Process error: {str(e)}")
+
+    def process_in_background(self, rect):
+        """Execute capture, OCR and translation in background"""
+        try:
+            # Capture screen
+            img = self.capture.capture_area(rect)
             if img is None:
                 return
 
+            # Perform OCR
             src_lang = self.languages[self.src_lang.currentText()]
             text = self.ocr.extract_text(img, src_lang)
 
@@ -209,20 +221,23 @@ class TranslationWindow(QWidget):
             if current_text == self.last_text.strip():
                 return
 
+            # Get language codes
             src_lang_code = self.translator_codes[src_lang]
             dest_lang_code = self.translator_codes[self.languages[self.dest_lang.currentText()]]
 
-            # 检查缓存
+            # Check cache
             cache_key = f"{current_text}_{src_lang_code}_{dest_lang_code}"
             if cache_key in self.translation_cache:
                 self.update_ui(text, self.translation_cache[cache_key])
                 return
 
-            # 在线程池中执行翻译
-            self.thread_pool.submit(self.translate_in_background, text, src_lang_code, dest_lang_code, cache_key)
+            # Perform translation
+            translation = self.translator.translate(text, src=src_lang_code, dest=dest_lang_code)
+            self.translation_cache[cache_key] = translation
+            self.update_ui(text, translation)
 
         except Exception as e:
-            self.logger.error(f"Process error: {str(e)}")
+            self.logger.error(f"Background process error: {str(e)}")
 
     def translate_in_background(self, text, src_lang_code, dest_lang_code, cache_key):
         """在后台线程中执行翻译"""
