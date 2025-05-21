@@ -27,11 +27,11 @@ class ScreenCapture:
             img = Image.frombytes('RGB', (sct_img.width, sct_img.height), sct_img.rgb)
             return img
         except mss.exception.ScreenShotError as e:
-            print(f"Screenshot error: {e}")
+            logging.error(f"Screenshot error: {e}")
             return None
         except ValueError as e:
-            print(f"Image conversion error: {e}")
+            logging.error(f"Image conversion error: {e}")
             return None
         except Exception as e:
-            print(f"Unexpected error during screen capture: {e}")
+            logging.error(f"Unexpected error during screen capture: {e}")
             return None
