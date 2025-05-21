@@ -1,6 +1,7 @@
 '''
 管理多屏截图逻辑
 '''
+import logging
 
 # ScreenCapture.py
 # 区域截图模块
@@ -14,6 +15,7 @@ class ScreenCapture:
 
     def capture_area(self, rect):
         # rect 是 QRect对象，需要转换为 dict
+        logging.info(f"start to Capturing area")
         try:
             monitor = {
                 "top": rect.top(),
