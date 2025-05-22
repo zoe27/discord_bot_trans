@@ -44,11 +44,11 @@ class DraggableWindow(QWidget):
 
         icons = [
             ("🅧", self.on_close),
-            ("🪟", self.on_button1),
+            # ("🪟", self.on_button1),
             ("🖥️", self.translation),
             ("⬚", self.screen_trans),
-            ("⛶", self.on_button4),
-            ("⧉", self.on_button5),
+            # ("⛶", self.on_button4),
+            # ("⧉", self.on_button5),
         ]
 
         for icon, callback in icons:
@@ -82,8 +82,8 @@ class DraggableWindow(QWidget):
     def on_close(self):
         self.close()
 
-    def on_button1(self):
-        print("点击了按钮 1")
+    # def on_button1(self):
+    #     print("点击了按钮 1")
 
     def translation(self):
         if self.window.isVisible():
@@ -99,11 +99,11 @@ class DraggableWindow(QWidget):
         self.selection_window.show()
         self.selection_window.setGeometry(QApplication.desktop().geometry())
 
-    def on_button4(self):
-        print("点击了按钮 4")
-
-    def on_button5(self):
-        print("点击了按钮 5")
+    # def on_button4(self):
+    #     print("点击了按钮 4")
+    #
+    # def on_button5(self):
+    #     print("点击了按钮 5")
 
     def on_area_selected(self, rect: QRect):
         """Callback when area is selected"""

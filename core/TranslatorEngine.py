@@ -54,8 +54,8 @@ class TranslatorEngine:
     ########### 有道翻译 ##############
 
     def youdao_translate(self, query, src='en', dest='zh-cn'):
-        appKey = os.getenv('YOUDAO_APP_KEY', '')  # Get AppKey from environment variable
-        appSecret = os.getenv('YOUDAO_APP_SECRET', '')  # Get AppSecret from environment variable
+        appKey = os.getenv('YOUDAO_APP_KEY', '264bff87c4ee74be')  # Get AppKey from environment variable
+        appSecret = os.getenv('YOUDAO_APP_SECRET', 'Uq2cK2P2k64DbeFKRcMWDFXKv9dVgKuH')  # Get AppSecret from environment variable
         if not appKey or not appSecret:
             raise ValueError("YOUDAO_APP_KEY and YOUDAO_APP_SECRET environment variables must be set")
         url = 'https://openapi.youdao.com/api'

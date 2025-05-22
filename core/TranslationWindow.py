@@ -18,6 +18,7 @@ class TranslationWindow(QWidget):
         self.capture = ScreenCapture()
         self.ocr = OcrEngine()
         self.translator = TranslatorEngine()
+        self.google_available = self.check_google_connectivity()
         self.last_text = ""
         self.selected_rect = None
         self.logger = logging.getLogger(__name__)
@@ -235,21 +236,37 @@ class TranslationWindow(QWidget):
                 return
 
             # Perform translation
-            translation = self.translator.translate(text, src=src_lang_code, dest=dest_lang_code)
+            # translation = self.translator.translate(text, src=src_lang_code, dest=dest_lang_code)
+            if self.google_available:
+                translation = self.translator.translate(text, src=src_lang_code, dest=dest_lang_code)
+            else:
+                translation = self.translator.youdao_translate(text, src=src_lang_code, dest=dest_lang_code)
+            self.translation_cache[cache_key] = translation
             self.translation_cache[cache_key] = translation
             self.update_ui(text, translation)
 
         except Exception as e:
             self.logger.error(f"Background process error: {str(e)}")
 
-    def translate_in_background(self, text, src_lang_code, dest_lang_code, cache_key):
-        """在后台线程中执行翻译"""
+    # def translate_in_background(self, text, src_lang_code, dest_lang_code, cache_key):
+    #     """在后台线程中执行翻译"""
+    #     try:
+    #         translation = self.translator.translate(text, src=src_lang_code, dest=dest_lang_code)
+    #         self.translation_cache[cache_key] = translation
+    #         self.update_ui(text, translation)
+    #     except Exception as e:
+    #         self.logger.error(f"Translation error: {str(e)}")
+
+    def check_google_connectivity(self):
+        """Check if Google Translate service is accessible"""
+        import socket
         try:
-            translation = self.translator.translate(text, src=src_lang_code, dest=dest_lang_code)
-            self.translation_cache[cache_key] = translation
-            self.update_ui(text, translation)
-        except Exception as e:
-            self.logger.error(f"Translation error: {str(e)}")
+            socket.create_connection(("translate.google.com", 80), timeout=3)
+            logging.info("✅ Google Translate is accessible")
+            return True
+        except (socket.timeout, socket.gaierror):
+            logging.warning("⚠️ Cannot reach Google Translate, will use Youdao")
+            return False
 
     def update_ui(self, text, translation):
         """更新UI界面"""
