@@ -40,8 +40,14 @@ class TesseractManager:
             logging.info(f"📦 Installing Tesseract into {self.tesseract_dir}")
 
             import subprocess
+            install_cmd = [
+                exe_path,
+                "/VERYSILENT",
+                f'/DIR={self.tesseract_dir}'  # 注意这里不能加引号
+            ]
+
             result = subprocess.run(
-                [exe_path, '/S', f'/D="{self.tesseract_dir}"'],
+                install_cmd,
                 capture_output=True,
                 text=True
             )
