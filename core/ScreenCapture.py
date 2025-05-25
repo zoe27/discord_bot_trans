@@ -19,7 +19,7 @@ class ScreenCapture:
 
     def capture_area(self, rect):
         # rect 是 QRect对象，需要转换为 dict
-        logging.info("Start capturing area")
+        # logging.info("Start capturing area")
         try:
             self._ensure_mss_instance()
             monitor = {

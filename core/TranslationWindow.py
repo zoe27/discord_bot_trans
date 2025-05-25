@@ -205,7 +205,7 @@ class TranslationWindow(QWidget):
 
     def process_in_background(self, rect):
         """Execute capture, OCR and translation in background"""
-        logging.info("🔄 Processing in background...")
+        # logging.info("🔄 Processing in background...")
         try:
             # Capture screen
             img = self.capture.capture_area(rect)

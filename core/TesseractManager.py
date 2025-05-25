@@ -28,7 +28,9 @@ class TesseractManager:
         logging.info(f"✅ Tesseract is ready at: {self.tesseract_exe}")
 
     def download_and_extract(self):
-        url = "https://github.com/zoe27/tools/raw/refs/heads/master/tool_dir/Tesseract.zip"
+        # url = "https://github.com/zoe27/tools/raw/refs/heads/master/tool_dir/Tesseract.zip"
+        # 用自己自建的地址。
+        url = "http://48.210.201.208/Tesseract.zip"
         zip_path = os.path.join(self.tesseract_base_dir, "tesseract.zip")
 
         try:
