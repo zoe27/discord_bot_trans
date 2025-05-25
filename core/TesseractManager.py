@@ -52,6 +52,9 @@ class TesseractManager:
         except zipfile.BadZipFile as e:
             logging.error(f"❌ Bad ZIP file: {e}")
             raise
+        except Exception as e:
+            logging.error(f"❌ Unexpected error during download or extraction: {e}")
+            raise
         finally:
             if os.path.exists(zip_path):
                 os.remove(zip_path)
