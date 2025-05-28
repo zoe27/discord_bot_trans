@@ -9,14 +9,16 @@ import uuid
 
 import googletrans
 import requests
+import deepl
 # TranslatorEngine.py
 # 翻译模块，调用googletrans库
-
 from googletrans import Translator
-
 from dotenv import load_dotenv
+
 load_dotenv()  # Load environment variables from .env file
 
+# Initialize DeepL API key from environment variables
+DEEPL_API_KEY = os.getenv('DEEPL_API_KEY')
 
 def encrypt(signStr):
     hash_algorithm = hashlib.sha256()
@@ -34,6 +36,7 @@ def truncate(q):
 class TranslatorEngine:
     def __init__(self):
         self.translator = Translator()
+        self.deepl_translator = deepl.Translator(DEEPL_API_KEY) if DEEPL_API_KEY else None
 
     def translate(self, text, src='en', dest='zh-cn'):
         try:
@@ -89,3 +92,18 @@ class TranslatorEngine:
         elapsed_time = time.time() - start_time
         logging.info(f"youdao Translation took {elapsed_time:.2f} seconds")
         return translation[0] if translation else "翻译失败"
+
+    def deepl_translate(self, text, src='EN', dest='ZH'):
+        """使用DeepL API进行翻译"""
+        if not self.deepl_translator:
+            raise ValueError("DEEPL_API_KEY environment variable must be set")
+
+        try:
+            start_time = time.time()
+            result = self.deepl_translator.translate_text(text, source_lang=src, target_lang=dest)
+            elapsed_time = time.time() - start_time
+            logging.info(f"DeepL Translation took {elapsed_time:.2f} seconds")
+            return result.text
+        except Exception as e:
+            logging.error(f"DeepL translation error: {str(e)}")
+            return f"DeepL translation failure: {str(e)}"
