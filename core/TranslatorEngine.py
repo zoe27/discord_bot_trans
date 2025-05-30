@@ -38,7 +38,7 @@ class TranslatorEngine:
         self.translator = Translator()
         self.deepl_translator = deepl.Translator(DEEPL_API_KEY) if DEEPL_API_KEY else None
 
-    def translate(self, text, src='en', dest='zh-cn'):
+    def translate(self, text, src='auto', dest='zh-cn'):
         try:
             # 调用Google Translate进行翻译
             # result = self.translator.translate(text, src=src, dest=dest)
@@ -56,7 +56,7 @@ class TranslatorEngine:
 
     ########### 有道翻译 ##############
 
-    def youdao_translate(self, query, src='en', dest='zh-cn'):
+    def youdao_translate(self, query, src='auto', dest='zh-cn'):
         appKey = os.getenv('YOUDAO_APP_KEY', '264bff87c4ee74be')  # Get AppKey from environment variable
         appSecret = os.getenv('YOUDAO_APP_SECRET', 'Uq2cK2P2k64DbeFKRcMWDFXKv9dVgKuH')  # Get AppSecret from environment variable
         if not appKey or not appSecret:
@@ -82,6 +82,8 @@ class TranslatorEngine:
             'signType': 'v3',
             'curtime': curtime,
         }
+
+        logging.info(f"youdao_translate called with query: {query}, src: {src}, dest: {dest}")
 
         start_time = time.time()
         response = requests.post(url, data=data, headers=headers)

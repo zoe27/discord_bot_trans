@@ -4,8 +4,8 @@ import time
 import logging
 from logging.handlers import RotatingFileHandler
 from PyQt5.QtWidgets import QApplication
-from MainWindow import MainWindow
 from Navigation import DraggableWindow
+from NetworkCheck import check_google_connectivity
 
 
 def setup_logging():
@@ -41,6 +41,7 @@ if __name__ == "__main__":
     # window.show()
     # logging.info("🚀 应用启动")
     # sys.exit(app.exec_())
+    check_google_connectivity()
 
     app = QApplication(sys.argv)
     window = DraggableWindow()

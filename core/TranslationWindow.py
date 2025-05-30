@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from ScreenCapture import ScreenCapture
 from OcrEngine import OcrEngine
 from TranslatorEngine import TranslatorEngine
+from NetworkCheck import is_google_available
 
 
 class TranslationWindow(QWidget):
@@ -18,7 +19,6 @@ class TranslationWindow(QWidget):
         self.capture = ScreenCapture()
         self.ocr = OcrEngine()
         self.translator = TranslatorEngine()
-        self.google_available = self.check_google_connectivity()
         self.last_text = ""
         self.selected_rect = None
         self.logger = logging.getLogger(__name__)
@@ -237,7 +237,7 @@ class TranslationWindow(QWidget):
 
             # Perform translation
             # translation = self.translator.translate(text, src=src_lang_code, dest=dest_lang_code)
-            if self.google_available:
+            if is_google_available():
                 translation = self.translator.translate(text, src=src_lang_code, dest=dest_lang_code)
             else:
                 translation = self.translator.youdao_translate(text, src=src_lang_code, dest=dest_lang_code)
@@ -256,17 +256,6 @@ class TranslationWindow(QWidget):
     #         self.update_ui(text, translation)
     #     except Exception as e:
     #         self.logger.error(f"Translation error: {str(e)}")
-
-    def check_google_connectivity(self):
-        """Check if Google Translate service is accessible"""
-        import socket
-        try:
-            socket.create_connection(("translate.google.com", 80), timeout=3)
-            logging.info("✅ Google Translate is accessible")
-            return True
-        except (socket.timeout, socket.gaierror):
-            logging.warning("⚠️ Cannot reach Google Translate, will use Youdao")
-            return False
 
     def update_ui(self, text, translation):
         """更新UI界面"""

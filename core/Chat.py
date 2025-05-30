@@ -10,6 +10,7 @@ import logging
 import time
 from googletrans import Translator
 from TranslatorEngine import TranslatorEngine
+from NetworkCheck import is_google_available
 
 class SignalHandler(QObject):
     update_translation = pyqtSignal(str)
@@ -76,7 +77,6 @@ class TranslatorApp(QWidget):
         self.resize(450, 200)
 
         # self.translator = Translator()
-        self.google_available = self.check_google_connectivity()
         self.translator = TranslatorEngine()
         self.floating_window = FloatingWindow()
 
@@ -141,17 +141,6 @@ class TranslatorApp(QWidget):
         layout.addWidget(right_container)
         self.setLayout(layout)
 
-    def check_google_connectivity(self):
-        """Check if Google Translate service is accessible"""
-        import socket
-        try:
-            socket.create_connection(("translate.google.com", 80), timeout=3)
-            logging.info("✅ Google Translate is accessible")
-            return True
-        except (socket.timeout, socket.gaierror):
-            logging.warning("⚠️ Cannot reach Google Translate, will use Youdao")
-            return False
-
     def check_and_translate(self):
         """检查是否需要翻译（带防抖）"""
         if self.dragging:
@@ -189,10 +178,9 @@ class TranslatorApp(QWidget):
         self.thread_pool.submit(self.translate_in_background, input_text, target_lang)
 
     def translate_in_background(self, text, target_lang):
-        logging.info(f"翻译文本: {text} 到 {target_lang}")
         """在后台执行翻译"""
         try:
-            if self.google_available:
+            if is_google_available():
                 translated_text = self.translator.translate(text, dest=target_lang)
             else:
                 translated_text = self.translator.youdao_translate(text, dest=target_lang)
