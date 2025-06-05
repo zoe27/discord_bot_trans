@@ -22,3 +22,6 @@ PoC 阶段，功能已通，欢迎反馈！
 ## ⭐ 开源地址
 [👉 项目 GitHub Repo](https://github.com/zoe27/discord_bot_trans)
 
+> 👇 想本地部署使用？查看 👉 [完整安装文档](docs/installation.md)
+
+
