@@ -1,40 +1,24 @@
-# ScreenTranslator - 屏幕实时翻译工具
+# 🧩 实时屏幕翻译工具 - Discord / Slack / Telegram 聊天助手
 
-## 项目简介 / Project Overview
-**ScreenTranslator** 是一个基于 Python 的屏幕翻译工具，集成了截图、OCR 文字识别、自动翻译、实时翻译和翻译功能。  
-ScreenTranslator is a Python-based screen translation tool that integrates screenshot capture, OCR text recognition, automatic translation, real-time translation, and translation features.
+这是一个桌面小工具，支持在 Discord、Slack、Telegram 等平台上：
+- 实时翻译聊天区域内容（无需复制粘贴）
+- 输入熟悉语言翻译为目标语言，用于跨语言对话
 
-### 功能特点 / Features
-- **屏幕截图 / Screenshot**: 选择屏幕区域并保存截图。
-- **OCR 识别 / OCR Recognition**: 使用 Tesseract OCR 识别截图中的文字。
-- **翻译 / Translation**: 使用 Google Translate 或有道翻译将识别的文字翻译为目标语言。
+## ✨ 核心功能
+- 🖱 屏幕任意区域选中，OCR + 实时翻译
+- 🗣 输入框翻译：输入中文转英文发送
+- 💬 支持多平台（Discord、Slack、Telegram）
+- ⚡ 自动触发，无需手动复制或点击翻译
 
-## 环境配置 / Environment Setup
+## 🚀 演示图
+> 示例演示请参考：[查看 Reddit 帖子](https://www.reddit.com/r/startupideas/comments/1kv2ov9/a_lightweight_realtime_screen_translation_tool/)
 
-1. **安装 Python / Install Python**: 确保已安装 Python 3.8 或更高版本，本项目使用的是 3.11。
-2. **安装依赖 / Install Dependencies**: 使用以下命令安装项目所需的依赖库：
-   ```bash
-   pip install -r requirements.txt
-3. **配置 Tesseract**:
-   - 下载并安装 [Tesseract OCR](https://github.com/tesseract-ocr/tesseract)。
-   - 确保将 Tesseract 的路径添加到系统环境变量中。
-   - 如果需要，修改 `translate_screenshot.py` 中的 `pytesseract.pytesseract.tesseract_cmd` 路径。
+## 🧪 当前状态
+PoC 阶段，功能已通，欢迎反馈！
 
-## 运行项目
-1. **运行主窗口**:
-   ```bash
-   python core/main.py
-   ```
-   这将启动主窗口，提供屏幕截图、OCR 和翻译功能。
+## 📩 如何试用
+想体验测试版？请在 [Issues](https://github.com/zoe27/discord_bot_trans/issues) 留言，或私信我。
 
-## 注意事项
-- 确保所有依赖库和工具（如 Tesseract）已正确安装。
-- 如果遇到问题，请检查依赖版本是否与 `requirements.txt` 中的版本一致。
+## ⭐ 开源地址
+[👉 项目 GitHub Repo](https://github.com/zoe27/discord_bot_trans)
 
-## 项目功能
-- **屏幕截图**: 选择屏幕区域并保存截图。
-- **OCR 识别**: 使用 Tesseract 识别截图中的文字。
-- **翻译**: 使用 Google Translate 将识别的文字翻译为目标语言。
-
-## 打包项目
-pyinstaller --onefile --windowed --name ScreenTranslator core/main.py
