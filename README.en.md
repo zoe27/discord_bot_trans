@@ -1,4 +1,6 @@
-# 🧩 Real-Time Screen Translator for Discord / Slack / Telegram
+🌐 [English](README.en.md) | [中文](README.md)
+
+🧩 Real-Time Screen Translator for Discord / Slack / Telegram
 
 A lightweight desktop tool that helps you **chat across languages** by translating **any text on screen in real time** — perfect for use in **Discord**, **Slack**, **Telegram**, or even in **games**, **PDFs**, and **videos**.
 

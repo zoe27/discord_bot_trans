@@ -1,6 +1,5 @@
-<p align="left">
 🌐 [English](README.en.md) | [中文](README.md)
-</p>
+
 
 
 # 🧩 实时屏幕翻译工具｜支持 Discord / Slack / Telegram 多平台跨语言聊天
