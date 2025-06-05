@@ -1,3 +1,8 @@
+<p align="left">
+🌐 [English](README.en.md) | [中文](README.md)
+</p>
+
+
 # 🧩 实时屏幕翻译工具｜支持 Discord / Slack / Telegram 多平台跨语言聊天
 
 一个轻量级桌面工具，帮助你在 **Discord、Slack、Telegram** 等聊天软件中，**实时翻译屏幕上的任何文字**，无需复制粘贴，直接选中区域就能看到翻译结果，让跨语言交流变得更轻松。
